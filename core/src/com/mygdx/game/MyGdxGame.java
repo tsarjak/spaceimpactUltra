@@ -14,7 +14,7 @@ public class MyGdxGame extends ApplicationAdapter {
 	SpriteBatch batch;
 	Texture background;
 	Texture spaceShip;
-    int xPosition, yPosition;
+    int yPosition, xPosition;
     Texture planets[];
     int xPos[],yPos[];
     int total;
@@ -23,8 +23,8 @@ public class MyGdxGame extends ApplicationAdapter {
 
     //Initializing variables for spaceship
     public void initializePositions(){
-        xPosition = spaceShip.getHeight()/2  - spaceShip.getHeight()/10;
-        yPosition = 0;
+        yPosition = spaceShip.getHeight()/2  - spaceShip.getHeight()/10;
+        xPosition = 0;
 
     }
 
@@ -66,18 +66,19 @@ public class MyGdxGame extends ApplicationAdapter {
         boolean left = false, right = false, up = false, down = false;
 		batch.begin();
 		batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		batch.draw(spaceShip,yPosition,xPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
+		batch.draw(spaceShip,xPosition,yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
 
-
-            int i=0;
-            batch.draw(planets[i],xPos[i],yPos[i],planets[i].getWidth()/2, planets[i].getHeight()/2);
-            xPos[i] = xPos[i] - 20;
-           // total += 20;
+            for(int i=0;i<=total/500;i++) {
+                batch.draw(planets[i], xPos[i], yPos[i], planets[i].getWidth() / 2, planets[i].getHeight() / 2);
+                xPos[i] = xPos[i] - 10;
+                 if(total < 2500)
+                     total += 10;
+            }
 
 
         /*batch.draw(planets[1],xPos[1],yPos[1],planets[1].getWidth()/2, planets[1].getHeight()/2);
         xPos[1] = xPos[1] - 20;
-        */batch.draw(planets[2],xPos[2],yPos[2],planets[2].getWidth()/2, planets[2].getHeight()/2);
+        batch.draw(planets[2],xPos[2],yPos[2],planets[2].getWidth()/2, planets[2].getHeight()/2);
         xPos[2] = xPos[2] - 10;
         /*batch.draw(planets[3],xPos[3],yPos[3],planets[3].getWidth()/2, planets[3].getHeight()/2);
         xPos[1] = xPos[3] - 20;*/
@@ -101,32 +102,32 @@ public class MyGdxGame extends ApplicationAdapter {
         }
 
             if(left) {
-                if (yPosition > 0) { //43 inputs at +=40 will move the spaceship to the end of the screen
-                        yPosition -= 10;
-                        batch.draw(spaceShip, yPosition, xPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
+                if (xPosition > 0) { //43 inputs at +=40 will move the spaceship to the end of the screen
+                        xPosition -= 10;
+                        batch.draw(spaceShip, xPosition, yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
                 }
             }
 
             if(right){
-                if (yPosition < 43 * 39){
-                        yPosition += 10;
-                        batch.draw(spaceShip, yPosition, xPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
+                if (xPosition < 43 * 39){
+                        xPosition += 10;
+                        batch.draw(spaceShip, xPosition, yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
 
                 }
             }
 
             if(up){
-            if (xPosition < Gdx.graphics.getHeight() - spaceShip.getHeight()/5){
-                xPosition += 10;
-                batch.draw(spaceShip, yPosition, xPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
+            if (yPosition < Gdx.graphics.getHeight() - spaceShip.getHeight()/5){
+                yPosition += 10;
+                batch.draw(spaceShip, xPosition, yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
 
                 }
             }
 
             if(down){
-            if (xPosition > 0){
-                xPosition -= 10;
-                batch.draw(spaceShip, yPosition, xPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
+            if (yPosition > 0){
+                yPosition -= 10;
+                batch.draw(spaceShip, xPosition, yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
 
                 }
             }

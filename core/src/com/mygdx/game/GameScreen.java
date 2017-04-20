@@ -33,8 +33,8 @@ public class GameScreen implements Screen {
     //Position Variables and flags
     int yPosition, xPosition;
     int xPos[],yPos[];
-    int total, count;
-    int flag;
+    int total, count, timeCount;
+    boolean flag;
 
     //Random number generator
     Random randomGenerator;
@@ -55,7 +55,7 @@ public class GameScreen implements Screen {
     //Initializing the variables for planets
     public void initialisePlanets(int last){
         count = 0;
-        flag = 1;
+        flag = false;
         xPos = new int[13];
         yPos = new int[13];
         for(int i=0;i<13;i++){
@@ -87,6 +87,7 @@ public class GameScreen implements Screen {
     public GameScreen(final MyGdxGame game) {
         this.gam = game;
 
+        timeCount=0;
         batch = new SpriteBatch();
         background = new Texture("space_bg1.jpg");
         spaceShip = new Texture("fighter1.png");
@@ -104,7 +105,7 @@ public class GameScreen implements Screen {
     }
 
     public void detectedCollision(){
-
+        gam.setScreen(new RetryScreen(gam));
     }
 
     @Override
@@ -113,103 +114,115 @@ public class GameScreen implements Screen {
         //For controls
         boolean left = false, right = false, up = false, down = false;
 
-        //Gdx.gl.glEnable(GL10.GL_BLEND);
-
-        //Start shape rendering
-
-
-
         //shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+
         //Begin Texture rendering
         batch.begin();
         batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
+        if(flag == false) {
+            batch.draw(spaceShip, xPosition, yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
+            spaceShipCircle.set(xPosition + spaceShip.getWidth() / 12, yPosition + spaceShip.getHeight() / 12, spaceShip.getWidth() / 16);
+            //shapeRenderer.circle(spaceShipCircle.x,spaceShipCircle.y,spaceShipCircle.radius);
 
-        batch.draw(spaceShip,xPosition,yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
-        spaceShipCircle.set(xPosition + spaceShip.getWidth()/12, yPosition + spaceShip.getHeight()/12, spaceShip.getWidth()/12);
-        //shapeRenderer.circle(spaceShipCircle.x,spaceShipCircle.y,spaceShipCircle.radius);
+            //Will add more planets in the array, hence the first array will work fine (no need for complex calculations)
+            //UPDATE: Added
+            for (int i = 0; i <= total / 750; i++) {
+                if (i < 13) {
+                    xPos[i] = xPos[i] - 15;
+                    batch.draw(planets[i], xPos[i], yPos[i], (float) (planets[i].getWidth() / 1.5), (float) (planets[i].getHeight() / 1.5));
+                    planetCircle[i].set((float) (xPos[i] + planets[i].getWidth() / 3), (float) (yPos[i] + planets[i].getHeight() / 3), (float) (planets[i].getHeight() / 3));
 
-        //Will add more planets in the array, hence the first array will work fine (no need for complex calculations)
-        //UPDATE: Added
-        for(int i=0;i<=total/750;i++) {
-            if(i<13) {
-                xPos[i] = xPos[i] - 15;
-                batch.draw(planets[i], xPos[i], yPos[i], (float) (planets[i].getWidth() / 1.5), (float) (planets[i].getHeight() / 1.5));
-                planetCircle[i].set((float) (xPos[i] + planets[i].getWidth()/3), (float) (yPos[i] + planets[i].getHeight()/3),(float) (planets[i].getHeight()/3));
+                    //shapeRenderer.circle(planetCircle[i].x,planetCircle[i].y,planetCircle[i].radius);
 
-                //shapeRenderer.circle(planetCircle[i].x,planetCircle[i].y,planetCircle[i].radius);
+                    if (Intersector.overlaps(spaceShipCircle, planetCircle[i])) {
+                        Gdx.app.log("Collision", "True");
+                        flag = true;
+                        //Call the function to restart the entire game or show level end screen whatever
+                    }
+                }
+            }
+            total += 15;
 
-                if(Intersector.overlaps(spaceShipCircle,planetCircle[i])){
-                    Gdx.app.log("Collision","True");
-                    //Call the function to restart the entire game or show level end screen whatever
+            if (total > 10920) {
+                //Show monster and start the fight!
+            }
+
+
+            //Getting touch Inputs
+            for (int j = 0; j < 2; j++) {
+                if (Gdx.input.isTouched(j)) {
+                    int iX = Gdx.input.getX(j);
+                    int iY = Gdx.input.getY(j);
+
+                    if (iX > 1100 && iX < 1500) {
+                        left = true;
+                    } else if (iX > 1500 && iX < 1900) {
+                        right = true;
+                    } else if (iX > 0 && iX < 800 && iY < Gdx.graphics.getHeight() / 2) {
+                        up = true;
+                    } else if (iX > 0 && iX < 800 && iY > Gdx.graphics.getHeight() / 2) {
+                        down = true;
+                    }
+                }
+            }
+
+            if (left) {
+                if (xPosition > 0) { //43 inputs at +=40 will move the spaceship to the end of the screen
+                    xPosition -= 10;
+                    batch.draw(spaceShip, xPosition, yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
+                    spaceShipCircle.set(xPosition + spaceShip.getWidth() / 12, yPosition + spaceShip.getHeight() / 12, spaceShip.getWidth() / 12);
+                    //shapeRenderer.circle(spaceShipCircle.x,spaceShipCircle.y,spaceShipCircle.radius);
+                }
+            }
+
+            if (right) {
+                if (xPosition < 43 * 39) {
+                    xPosition += 10;
+                    batch.draw(spaceShip, xPosition, yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
+                    spaceShipCircle.set(xPosition + spaceShip.getWidth() / 12, yPosition + spaceShip.getHeight() / 12, spaceShip.getWidth() / 12);
+                    //shapeRenderer.circle(spaceShipCircle.x,spaceShipCircle.y,spaceShipCircle.radius);
+                }
+            }
+
+            if (up) {
+                if (yPosition < Gdx.graphics.getHeight() - spaceShip.getHeight() / 5) {
+                    yPosition += 10;
+                    batch.draw(spaceShip, xPosition, yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
+                    spaceShipCircle.set(xPosition + spaceShip.getWidth() / 12, yPosition + spaceShip.getHeight() / 12, spaceShip.getWidth() / 12);
+                    //shapeRenderer.circle(spaceShipCircle.x,spaceShipCircle.y,spaceShipCircle.radius);
+                }
+            }
+
+            if (down) {
+                if (yPosition > 0) {
+                    yPosition -= 10;
+                    batch.draw(spaceShip, xPosition, yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
+                    spaceShipCircle.set(xPosition + spaceShip.getWidth() / 12, yPosition + spaceShip.getHeight() / 12, spaceShip.getWidth() / 12);
+                    //shapeRenderer.circle(spaceShipCircle.x,spaceShipCircle.y,spaceShipCircle.radius);
                 }
             }
         }
-        total += 15;
 
-        if(total > 10920){
-            //Show monster and start the fight!
-        }
+        else {
+            batch.draw(spaceShip, xPosition, yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
+            for (int i = 0; i <= total / 750; i++) {
+                if (i < 13) {
+                    batch.draw(planets[i], xPos[i], yPos[i], (float) (planets[i].getWidth() / 1.5), (float) (planets[i].getHeight() / 1.5));
+                    planetCircle[i].set((float) (xPos[i] + planets[i].getWidth() / 3), (float) (yPos[i] + planets[i].getHeight() / 3), (float) (planets[i].getHeight() / 3));
 
-
-        //Getting touch Inputs
-        for(int j=0;j<2;j++) {
-            if (Gdx.input.isTouched(j)) {
-                int iX = Gdx.input.getX(j);
-                int iY = Gdx.input.getY(j);
-
-                if (iX > 1100 && iX < 1500) {
-                    left = true;
-                } else if (iX > 1500 && iX < 1900) {
-                    right = true;
-                } else if (iX > 0 && iX < 800 && iY < Gdx.graphics.getHeight() / 2) {
-                    up = true;
-                } else if (iX > 0 && iX < 800 && iY > Gdx.graphics.getHeight() / 2) {
-                    down = true;
                 }
             }
-        }
+            timeCount++;
 
-        if(left) {
-            if (xPosition > 0) { //43 inputs at +=40 will move the spaceship to the end of the screen
-                xPosition -= 10;
-                batch.draw(spaceShip, xPosition, yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
-                spaceShipCircle.set(xPosition + spaceShip.getWidth()/12, yPosition + spaceShip.getHeight()/12, spaceShip.getWidth()/12);
-                //shapeRenderer.circle(spaceShipCircle.x,spaceShipCircle.y,spaceShipCircle.radius);
+            if(timeCount>30){
+                detectedCollision();
             }
         }
+            //End texture Rendering
+            batch.end();
 
-        if(right){
-            if (xPosition < 43 * 39){
-                xPosition += 10;
-                batch.draw(spaceShip, xPosition, yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
-                spaceShipCircle.set(xPosition + spaceShip.getWidth()/12, yPosition + spaceShip.getHeight()/12, spaceShip.getWidth()/12);
-                //shapeRenderer.circle(spaceShipCircle.x,spaceShipCircle.y,spaceShipCircle.radius);
-            }
-        }
-
-        if(up){
-            if (yPosition < Gdx.graphics.getHeight() - spaceShip.getHeight()/5){
-                yPosition += 10;
-                batch.draw(spaceShip, xPosition, yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
-                spaceShipCircle.set(xPosition + spaceShip.getWidth()/12, yPosition + spaceShip.getHeight()/12, spaceShip.getWidth()/12);
-                //shapeRenderer.circle(spaceShipCircle.x,spaceShipCircle.y,spaceShipCircle.radius);
-            }
-        }
-
-        if(down){
-            if (yPosition > 0){
-                yPosition -= 10;
-                batch.draw(spaceShip, xPosition, yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
-                spaceShipCircle.set(xPosition + spaceShip.getWidth()/12, yPosition + spaceShip.getHeight()/12, spaceShip.getWidth()/12);
-                //shapeRenderer.circle(spaceShipCircle.x,spaceShipCircle.y,spaceShipCircle.radius);
-            }
-        }
-
-
-
-        //End texture Rendering
-        batch.end();
     }
 
     @Override

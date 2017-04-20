@@ -4,6 +4,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -38,6 +39,9 @@ public class GameScreen implements Screen {
     Random randomGenerator;
 
     //Shapes and Shape renderer for collision detection
+    ShapeRenderer shapeRenderer = new ShapeRenderer();
+    Circle spaceShipCircle = new Circle();
+    Circle planetCircle = new Circle();
 
 
     //Initializing variables for spaceship
@@ -96,17 +100,30 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
+
+        //For controls
         boolean left = false, right = false, up = false, down = false;
+
+        //Start shape rendering
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+        //Begin Texture rendering
         batch.begin();
         batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+
         batch.draw(spaceShip,xPosition,yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
+        spaceShipCircle.set(xPosition + spaceShip.getWidth()/12, yPosition + spaceShip.getHeight()/12, spaceShip.getWidth()/12);
+        shapeRenderer.circle(spaceShipCircle.x,spaceShipCircle.y,spaceShipCircle.radius);
 
         //Will add more planets in the array, hence the first array will work fine (no need for complex calculations)
         //UPDATE: Added
         for(int i=0;i<=total/750;i++) {
             if(i<13) {
-                batch.draw(planets[i], xPos[i], yPos[i], (float) (planets[i].getWidth() / 1.5), (float) (planets[i].getHeight() / 1.5));
                 xPos[i] = xPos[i] - 15;
+                batch.draw(planets[i], xPos[i], yPos[i], (float) (planets[i].getWidth() / 1.5), (float) (planets[i].getHeight() / 1.5));
+                planetCircle.set((float) (xPos[i] + planets[i].getWidth()/3), (float) (yPos[i] + planets[i].getHeight()/3),(float) (planets[i].getHeight()/3));
+                shapeRenderer.circle(planetCircle.x,planetCircle.y,planetCircle.radius);
             }
         }
         total += 15;
@@ -116,6 +133,7 @@ public class GameScreen implements Screen {
         }
 
 
+        //Getting touch Inputs
         for(int j=0;j<2;j++) {
             if (Gdx.input.isTouched(j)) {
                 int iX = Gdx.input.getX(j);
@@ -137,6 +155,8 @@ public class GameScreen implements Screen {
             if (xPosition > 0) { //43 inputs at +=40 will move the spaceship to the end of the screen
                 xPosition -= 10;
                 batch.draw(spaceShip, xPosition, yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
+                spaceShipCircle.set(xPosition + spaceShip.getWidth()/12, yPosition + spaceShip.getHeight()/12, spaceShip.getWidth()/12);
+                shapeRenderer.circle(spaceShipCircle.x,spaceShipCircle.y,spaceShipCircle.radius);
             }
         }
 
@@ -144,7 +164,8 @@ public class GameScreen implements Screen {
             if (xPosition < 43 * 39){
                 xPosition += 10;
                 batch.draw(spaceShip, xPosition, yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
-
+                spaceShipCircle.set(xPosition + spaceShip.getWidth()/12, yPosition + spaceShip.getHeight()/12, spaceShip.getWidth()/12);
+                shapeRenderer.circle(spaceShipCircle.x,spaceShipCircle.y,spaceShipCircle.radius);
             }
         }
 
@@ -152,7 +173,8 @@ public class GameScreen implements Screen {
             if (yPosition < Gdx.graphics.getHeight() - spaceShip.getHeight()/5){
                 yPosition += 10;
                 batch.draw(spaceShip, xPosition, yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
-
+                spaceShipCircle.set(xPosition + spaceShip.getWidth()/12, yPosition + spaceShip.getHeight()/12, spaceShip.getWidth()/12);
+                shapeRenderer.circle(spaceShipCircle.x,spaceShipCircle.y,spaceShipCircle.radius);
             }
         }
 
@@ -160,11 +182,24 @@ public class GameScreen implements Screen {
             if (yPosition > 0){
                 yPosition -= 10;
                 batch.draw(spaceShip, xPosition, yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
-
+                spaceShipCircle.set(xPosition + spaceShip.getWidth()/12, yPosition + spaceShip.getHeight()/12, spaceShip.getWidth()/12);
+                shapeRenderer.circle(spaceShipCircle.x,spaceShipCircle.y,spaceShipCircle.radius);
             }
         }
 
+        //End texture Rendering
         batch.end();
+
+
+
+        //shapeRenderer.setColor(Color.BLUE);
+
+
+
+
+
+        //End Shape Rendering
+        shapeRenderer.end();
     }
 
     @Override

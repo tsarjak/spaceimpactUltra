@@ -1,24 +1,34 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 
 import java.util.Random;
 
-public class MyGdxGame extends ApplicationAdapter {
-	SpriteBatch batch;
+public class MyGdxGame extends Game {
+
+    //Needed variables
+    SpriteBatch batch;
 	Texture background;
 	Texture spaceShip;
     int yPosition, xPosition;
     Texture planets[];
     int xPos[],yPos[];
-    int total;
+    int total, count;
+    int flag;
     Random randomGenerator;
+
+    //Shapes for collision detection
+   /* Circle spaceeShipCircle = new Circle();
+    ShapeRenderer shapeRenderer = new ShapeRenderer();*/
 
 
     //Initializing variables for spaceship
@@ -29,14 +39,15 @@ public class MyGdxGame extends ApplicationAdapter {
     }
 
     //Initializing the variables for planets
-    public void initialisePlanets(){
+    public void initialisePlanets(int last){
+        count = 0;
+        flag = 1;
         xPos = new int[10];
         yPos = new int[10];
-        for(int i=0;i<6;i++){
+        for(int i=0;i<7;i++){
             planets[i] = new Texture("planet"+i+".png");
             //Gdx.app.log("Trial", "planet"+(i+1)+".png");
         }
-        //planets[0] = new Texture("planet1.png");
         total = 0;
         for(int i=0;i<10;i++){
             xPos[i] = 1920;
@@ -44,8 +55,15 @@ public class MyGdxGame extends ApplicationAdapter {
         }
     }
 
+    public void initializePlanetPosition(int first, int last){
+        for(int i=first;i<last;i++){
+            xPos[i] = 1920;
+            yPos[i] = randomGenerator.nextInt(11) * 100;
+        }
+    }
 
-    //Drawing planets that move from right to right
+
+    //Drawing planets that move from right to left
     public void drawPlanets(){
 
     }
@@ -57,32 +75,38 @@ public class MyGdxGame extends ApplicationAdapter {
 		spaceShip = new Texture("fighter1.png");
         planets = new Texture[10];
         randomGenerator = new Random();
-        initialisePlanets();
+        initialisePlanets(7);
         initializePositions();
 	}
 
 	@Override
 	public void render () {
+
         boolean left = false, right = false, up = false, down = false;
 		batch.begin();
 		batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		batch.draw(spaceShip,xPosition,yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
 
-            for(int i=0;i<=total/500;i++) {
-                batch.draw(planets[i], xPos[i], yPos[i], planets[i].getWidth() / 2, planets[i].getHeight() / 2);
-                xPos[i] = xPos[i] - 10;
-                 if(total < 2500)
-                     total += 10;
+            //Will add more planets in the array, hence the first array will work fine (no need for complex calculations)
+            for(int i=0;i<=total/750;i++) {
+                if(i<7) {
+                    batch.draw(planets[i], xPos[i], yPos[i], (float) (planets[i].getWidth() / 1.5), (float) (planets[i].getHeight() / 1.5));
+                    xPos[i] = xPos[i] - 15;
+                }
             }
+            total += 15;
 
-
-        /*batch.draw(planets[1],xPos[1],yPos[1],planets[1].getWidth()/2, planets[1].getHeight()/2);
-        xPos[1] = xPos[1] - 20;
-        batch.draw(planets[2],xPos[2],yPos[2],planets[2].getWidth()/2, planets[2].getHeight()/2);
-        xPos[2] = xPos[2] - 10;
-        /*batch.draw(planets[3],xPos[3],yPos[3],planets[3].getWidth()/2, planets[3].getHeight()/2);
-        xPos[1] = xPos[3] - 20;*/
-
+            /*if(total>5249 || flag == 1){
+                if(flag == 0){
+                    initializePlanetPosition(0,5);
+                    total = 0;
+                }
+                flag = 1;
+                for(int j=5;j<7;j++){
+                    batch.draw(planets[j], xPos[j], yPos[j], (float) (planets[j].getWidth() / 1.5), (float) (planets[j].getHeight() / 1.5));
+                    xPos[j] = xPos[j] - 15;
+                }
+            }*/
 
         for(int j=0;j<2;j++) {
             if (Gdx.input.isTouched(j)) {

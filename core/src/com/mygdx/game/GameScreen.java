@@ -21,15 +21,24 @@ public class GameScreen implements Screen {
 
     final MyGdxGame gam;
 
+    //Variable needed for every function
+    //Textures and backgrounds
     SpriteBatch batch;
     Texture background;
     Texture spaceShip;
-    int yPosition, xPosition;
     Texture planets[];
+
+    //Position Variables and flags
+    int yPosition, xPosition;
     int xPos[],yPos[];
     int total, count;
     int flag;
+
+    //Random number generator
     Random randomGenerator;
+
+    //Shapes and Shape renderer for collision detection
+
 
     //Initializing variables for spaceship
     public void initializePositions(){
@@ -42,14 +51,14 @@ public class GameScreen implements Screen {
     public void initialisePlanets(int last){
         count = 0;
         flag = 1;
-        xPos = new int[10];
-        yPos = new int[10];
-        for(int i=0;i<7;i++){
+        xPos = new int[13];
+        yPos = new int[13];
+        for(int i=0;i<13;i++){
             planets[i] = new Texture("planet"+i+".png");
             //Gdx.app.log("Trial", "planet"+(i+1)+".png");
         }
         total = 0;
-        for(int i=0;i<10;i++){
+        for(int i=0;i<13;i++){
             xPos[i] = 1920;
             yPos[i] = randomGenerator.nextInt(11) * 100;
         }
@@ -74,9 +83,9 @@ public class GameScreen implements Screen {
         batch = new SpriteBatch();
         background = new Texture("space_bg1.jpg");
         spaceShip = new Texture("fighter1.png");
-        planets = new Texture[10];
+        planets = new Texture[13];
         randomGenerator = new Random();
-        initialisePlanets(7);
+        initialisePlanets(13);
         initializePositions();
     }
 
@@ -93,13 +102,18 @@ public class GameScreen implements Screen {
         batch.draw(spaceShip,xPosition,yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
 
         //Will add more planets in the array, hence the first array will work fine (no need for complex calculations)
+        //UPDATE: Added
         for(int i=0;i<=total/750;i++) {
-            if(i<7) {
+            if(i<13) {
                 batch.draw(planets[i], xPos[i], yPos[i], (float) (planets[i].getWidth() / 1.5), (float) (planets[i].getHeight() / 1.5));
                 xPos[i] = xPos[i] - 15;
             }
         }
         total += 15;
+
+        if(total > 10920){
+            //Show monster and start the fight!
+        }
 
 
         for(int j=0;j<2;j++) {

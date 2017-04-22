@@ -7,6 +7,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
@@ -28,13 +29,15 @@ public class GameScreen implements Screen {
     SpriteBatch batch;
     Texture background;
     Texture spaceShip;
-    Texture planets[];
+    Texture planets[], controls[], levelComplete[];
+    Sprite controlSprite[], levelCompleteSprite[];
 
     //Position Variables and flags
     int yPosition, xPosition;
     int xPos[],yPos[];
     int total, count, timeCount;
-    boolean flag;
+    boolean flag, levelFlag, upDownFlag;
+    float controlAlpha, levelCompleteAlpha;
 
     //Random number generator
     Random randomGenerator;
@@ -53,35 +56,74 @@ public class GameScreen implements Screen {
     }
 
     //Initializing the variables for planets
-    public void initialisePlanets(int last){
+    public void initialisePlanets(int last) {
         count = 0;
         flag = false;
-        xPos = new int[13];
-        yPos = new int[13];
-        for(int i=0;i<13;i++){
-            planets[i] = new Texture("planet"+i+".png");
+        xPos = new int[20];
+        yPos = new int[20];
+        for (int i = 0; i < 20; i++) {
+            if(i>12){
+                int k = i - 12;
+                planets[i] = new Texture("planet" + k + ".png");
+            } else {
+                planets[i] = new Texture("planet" + i + ".png");
+            }
             //Gdx.app.log("Trial", "planet"+(i+1)+".png");
         }
         total = 0;
-        for(int i=0;i<13;i++){
+        for (int i = 0; i < 20; i++) {
             xPos[i] = 1920;
             yPos[i] = randomGenerator.nextInt(11) * 100;
         }
     }
-
-    public void initializePlanetPosition(int first, int last){
-        for(int i=first;i<last;i++){
-            xPos[i] = 1920;
-            yPos[i] = randomGenerator.nextInt(11) * 100;
-        }
-    }
-
 
     //Initialising shapes for collision detection
     public void initialiseShapes(){
-        for(int i=0;i<13;i++){
+        for(int i=0;i<20;i++){
             planetCircle[i] = new Circle();
         }
+    }
+
+    public void initialiseControls(){
+        controls[0] = new Texture("up.png");
+        controls[1] = new Texture("down.png");
+        controls[2] = new Texture("left.png");
+        controls[3] = new Texture("right.png");
+        controls[4] = new Texture("MoveSpaceship.png");
+        controls[5] = new Texture("collision.png");
+        controlAlpha = 0.4f;
+
+        for(int i=0;i<6;i++){
+            controlSprite[i] = new Sprite(controls[i]);
+        }
+
+        controlSprite[0].setPosition(500f,700f);
+        controlSprite[1].setPosition(500f,250f);
+        controlSprite[2].setPosition(1250f,200f);
+        controlSprite[3].setPosition(1750f,200f);
+        controlSprite[4].setPosition(200f,950f);
+        controlSprite[5].setPosition(200f,800f);
+    }
+
+    public void initialiseLevelComplete(){
+        levelComplete = new Texture[3];
+        levelCompleteSprite = new Sprite[3];
+
+        levelComplete[0] = new Texture("levelCompleted/l1comp.png");
+        levelComplete[1] = new Texture("levelCompleted/goodJob.png");
+        levelComplete[2] = new Texture("levelCompleted/tapToProceed.png");
+
+        for(int i=0;i<3;i++){
+            levelCompleteSprite[i] = new Sprite(levelComplete[i]);
+        }
+
+        levelCompleteSprite[0].setPosition(250f,800f);
+        levelCompleteSprite[1].setPosition(250f,600f);
+        levelCompleteSprite[2].setPosition(250f,400f);
+
+        levelCompleteAlpha = 0.8f;
+        upDownFlag = true;
+        levelFlag = false;
     }
 
     public GameScreen(final MyGdxGame game) {
@@ -91,12 +133,16 @@ public class GameScreen implements Screen {
         batch = new SpriteBatch();
         background = new Texture("space_bg1.jpg");
         spaceShip = new Texture("fighter1.png");
-        planets = new Texture[13];
-        planetCircle = new Circle[13];
+        planets = new Texture[20];
+        controls = new Texture[6];
+        controlSprite = new Sprite[6];
+        planetCircle = new Circle[20];
         randomGenerator = new Random();
-        initialisePlanets(13);
-        initializePositions();
-        initialiseShapes();
+        initialisePlanets(20); //To store planet positions randomly and fill the textures
+        initializePositions(); //Resize spaceship according to the screen and position it
+        initialiseShapes(); //Initialise shapes for collision detection
+        initialiseControls(); //First few seconds controls on screen display
+        initialiseLevelComplete(); // Initialise textures and Sprites for Level Complete Screen
     }
 
     @Override
@@ -114,12 +160,42 @@ public class GameScreen implements Screen {
         //For controls
         boolean left = false, right = false, up = false, down = false;
 
-        //shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-
-
         //Begin Texture rendering
+        batch.enableBlending();
         batch.begin();
         batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+
+        //Drawing the controls
+        for(int i=0;i<6;i++){
+            if(controlAlpha>0) {
+                controlSprite[i].setAlpha(controlAlpha);
+                if(i<4) {
+                    controlSprite[i].setScale(6f, 6f);
+                }
+                controlSprite[i].draw(batch);
+            }
+        }
+        if(controlAlpha>0) {
+            controlAlpha -= 0.002;
+        }//Reducing the Alpha value
+
+
+        //Drawing the level Complete Screen
+        if(levelFlag){
+            if(levelCompleteAlpha == 0.8f) upDownFlag=true;
+            else if(levelCompleteAlpha == 0.4f) upDownFlag=false;
+
+            for(int i=0;i<3;i++){
+                levelCompleteSprite[i].setAlpha(levelCompleteAlpha);
+                levelCompleteSprite[i].draw(batch);
+            }
+
+            if(upDownFlag) levelCompleteAlpha-=0.002;
+            else if(!upDownFlag) levelCompleteAlpha+=0.002;
+
+        }
+
 
         if(flag == false) {
             batch.draw(spaceShip, xPosition, yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
@@ -129,10 +205,10 @@ public class GameScreen implements Screen {
             //Will add more planets in the array, hence the first array will work fine (no need for complex calculations)
             //UPDATE: Added
             for (int i = 0; i <= total / 750; i++) {
-                if (i < 13) {
-                    xPos[i] = xPos[i] - 15;
-                    batch.draw(planets[i], xPos[i], yPos[i], (float) (planets[i].getWidth() / 1.5), (float) (planets[i].getHeight() / 1.5));
-                    planetCircle[i].set((float) (xPos[i] + planets[i].getWidth() / 3), (float) (yPos[i] + planets[i].getHeight() / 3), (float) (planets[i].getHeight() / 3));
+                if (i < 20) {
+                    xPos[i] = xPos[i] - 20;
+                    batch.draw(planets[i], xPos[i], yPos[i], (float) (planets[i].getWidth() / 1.2), (float) (planets[i].getHeight() / 1.2));
+                    planetCircle[i].set((float) (xPos[i] + planets[i].getWidth() / 2.4), (float) (yPos[i] + planets[i].getHeight() / 2.4), (float) (planets[i].getHeight() / 2.4));
 
                     //shapeRenderer.circle(planetCircle[i].x,planetCircle[i].y,planetCircle[i].radius);
 
@@ -143,10 +219,10 @@ public class GameScreen implements Screen {
                     }
                 }
             }
-            total += 15;
+            total += 20;
 
-            if (total > 10920) {
-                //Show monster and start the fight!
+            if (total > 17000) {
+                levelFlag = true;
             }
 
 

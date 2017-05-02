@@ -23,6 +23,7 @@ public class MyGdxGame extends Game {
         batch = new SpriteBatch();
         //Use LibGDX's default Arial font.
         font = new BitmapFont();
+        font.getData().setScale(10);
         this.setScreen(new MainScreen(this));
     }
 

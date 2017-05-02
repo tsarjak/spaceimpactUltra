@@ -4,9 +4,12 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -14,6 +17,7 @@ import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+
 
 import java.util.Random;
 /**
@@ -26,11 +30,15 @@ public class GameScreen implements Screen {
 
     //Variable needed for every function
     //Textures and backgrounds
+    long id;
     SpriteBatch batch;
     Texture background;
     Texture spaceShip;
     Texture planets[], controls[], levelComplete[];
     Sprite controlSprite[], levelCompleteSprite[];
+    static int score;
+    int scoreCount;
+    Music spaceShipSound;
 
     //Position Variables and flags
     int yPosition, xPosition;
@@ -46,6 +54,8 @@ public class GameScreen implements Screen {
     ShapeRenderer shapeRenderer = new ShapeRenderer();
     Circle spaceShipCircle = new Circle();
     Circle planetCircle[];
+
+    BitmapFont font;
 
 
     //Initializing variables for spaceship
@@ -70,7 +80,7 @@ public class GameScreen implements Screen {
             }
             //Gdx.app.log("Trial", "planet"+(i+1)+".png");
         }
-        total = 0;
+        total = -1000;
         for (int i = 0; i < 20; i++) {
             xPos[i] = 1920;
             yPos[i] = randomGenerator.nextInt(11) * 100;
@@ -129,6 +139,11 @@ public class GameScreen implements Screen {
     public GameScreen(final MyGdxGame game) {
         this.gam = game;
 
+        font = new BitmapFont();
+        font.setColor(Color.WHITE);
+        font.getData().setScale(4);
+        score = 0;
+        scoreCount=0;
         timeCount=0;
         batch = new SpriteBatch();
         background = new Texture("space_bg1.jpg");
@@ -138,6 +153,14 @@ public class GameScreen implements Screen {
         controlSprite = new Sprite[6];
         planetCircle = new Circle[20];
         randomGenerator = new Random();
+
+        spaceShipSound = Gdx.audio.newMusic(Gdx.files.internal("spaceSound.mp3"));
+        spaceShipSound.setLooping(true);
+        spaceShipSound.play();
+        if(spaceShipSound.isPlaying()){
+            Gdx.app.log("Music", "Playing");
+        }
+
         initialisePlanets(20); //To store planet positions randomly and fill the textures
         initializePositions(); //Resize spaceship according to the screen and position it
         initialiseShapes(); //Initialise shapes for collision detection
@@ -156,7 +179,6 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
-
         //For controls
         boolean left = false, right = false, up = false, down = false;
 
@@ -194,6 +216,12 @@ public class GameScreen implements Screen {
             if(upDownFlag) levelCompleteAlpha-=0.002;
             else if(!upDownFlag) levelCompleteAlpha+=0.002;
 
+            if (Gdx.input.isTouched()) {
+                Gdx.app.log("Tapped","True");
+                gam.setScreen(new LevelTwo(gam));
+                dispose();
+            }
+
         }
 
 
@@ -214,12 +242,23 @@ public class GameScreen implements Screen {
 
                     if (Intersector.overlaps(spaceShipCircle, planetCircle[i])) {
                         Gdx.app.log("Collision", "True");
+                        Gdx.input.vibrate(1000);
+                        //spaceShipSound.play(1.0f);
+                        spaceShipSound.stop();
                         flag = true;
                         //Call the function to restart the entire game or show level end screen whatever
                     }
                 }
             }
             total += 20;
+            scoreCount+=1;
+            if(!levelFlag) {
+                if (scoreCount > 35) {
+                    scoreCount = 0;
+                    score += 100;
+                }
+            }
+            font.draw(batch,"Score: " + String.valueOf(score),100,100);
 
             if (total > 17000) {
                 levelFlag = true;
@@ -284,8 +323,8 @@ public class GameScreen implements Screen {
         else {
             batch.draw(spaceShip, xPosition, yPosition, Gdx.graphics.getWidth() / 10, Gdx.graphics.getHeight() / 10);
             for (int i = 0; i <= total / 750; i++) {
-                if (i < 13) {
-                    batch.draw(planets[i], xPos[i], yPos[i], (float) (planets[i].getWidth() / 1.5), (float) (planets[i].getHeight() / 1.5));
+                if (i < 20) {
+                    batch.draw(planets[i], xPos[i], yPos[i], (float) (planets[i].getWidth() / 1.2), (float) (planets[i].getHeight() / 1.2));
                     planetCircle[i].set((float) (xPos[i] + planets[i].getWidth() / 3), (float) (yPos[i] + planets[i].getHeight() / 3), (float) (planets[i].getHeight() / 3));
 
                 }
